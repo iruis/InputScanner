@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>TEST</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css"
+        integrity="sha384-9aIt2nRpC12Uk9gS9baDl411NQApFmC26EwAOH8WgZl5MYYxFfc+NcPb1dKGj7Sk" crossorigin="anonymous">
+    <style title="vk-styles">
+        html,
+        body {
+            margin: 0 !important;
+            padding: 0 !important;
+        }
+
+        .btn {
+            transition: none !important;
+            line-height: 1.2 !important;
+            font-size: 0.95rem;
+        }
+
+        .btn-vk {
+            color: #00000000;
+            border-color: #00000000;
+        }
+
+        .blink {
+            animation: 0.1s ease-in 0s 1 fade;
+        }
+
+        .press {
+            background-color: #00000000;
+        }
+
+        .shadow-vk {
+            box-shadow: 0 0 3px white !important;
+            text-shadow: 0 0 3px white !important;
+        }
+
+        .label-vk {
+            font-weight: 600;
+        }
+
+        .label-percent {
+            font-size: 0.7rem;
+        }
+
+        #container {
+            top: 0px;
+            left: 0px;
+            width: 0px;
+            height: 0px;
+        }
+
+        @keyframes fade {
+            0% {
+                background-color: #00000000;
+            }
+
+            100% {
+                background-color: #00000000;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div id="container"></div>
+    <div id="test" class="position-absolute" style="top: 200px;">
+        <div class="btn btn-light border border-secondary rounded position-absolute p-0" style="top:  0px; left: 70px; width: 60px; height: 15px; line-height: 1.0 !important;">L2</div>
+        <div class="btn btn-light border border-secondary rounded position-absolute p-0" style="top: 20px; left: 70px; width: 60px; height: 15px; line-height: 1.0 !important;">L1</div>
+
+        <div class="btn btn-light border border-secondary rounded position-absolute p-0" style="top:  0px; left: 210px; width: 60px; height: 15px; line-height: 1.0 !important;">R2</div>
+        <div class="btn btn-light border border-secondary rounded position-absolute p-0" style="top: 20px; left: 210px; width: 60px; height: 15px; line-height: 1.0 !important;">R1</div>
+
+        <div class="btn btn-light border border-secondary rounded position-absolute p-0" style="top: 40px; left: 100px; width: 15px; height: 25px;">S</div>
+        <div class="btn btn-light border border-secondary rounded position-absolute p-0" style="top: 40px; left: 220px; width: 15px; height: 25px;">O</div>
+
+        <div class="btn btn-light border border-secondary rounded-circle position-absolute p-0" style="top: 30px; left: 30px; width: 30px; height: 30px;">A</div>
+        <div class="btn btn-light border border-secondary rounded-circle position-absolute p-0" style="top: 60px; left:  0px; width: 30px; height: 30px;">B</div>
+        <div class="btn btn-light border border-secondary rounded-circle position-absolute p-0" style="top: 90px; left: 30px; width: 30px; height: 30px;">C</div>
+        <div class="btn btn-light border border-secondary rounded-circle position-absolute p-0" style="top: 60px; left: 60px; width: 30px; height: 30px;">D</div>
+
+        <div class="btn btn-light border border-secondary rounded-circle position-absolute p-0" style="top: 30px; left: 280px; width: 30px; height: 30px;">A</div>
+        <div class="btn btn-light border border-secondary rounded-circle position-absolute p-0" style="top: 60px; left: 250px; width: 30px; height: 30px;">B</div>
+        <div class="btn btn-light border border-secondary rounded-circle position-absolute p-0" style="top: 90px; left: 280px; width: 30px; height: 30px;">C</div>
+        <div class="btn btn-light border border-secondary rounded-circle position-absolute p-0" style="top: 60px; left: 310px; width: 30px; height: 30px;">D</div>
+
+        <div class="btn btn-light border border-secondary rounded-circle position-absolute p-0" style="top: 100px; left: 100px; width: 40px; height: 40px;">L3</div>
+        <div class="btn btn-light border border-secondary rounded-circle position-absolute p-0" style="top: 100px; left: 200px; width: 40px; height: 40px;">R3</div>
+    </div>
+
+    <script>
+        var uri = "ws://127.0.0.1:13300"
+        var opened = false
+        var socket = null
+
+        var container = document.getElementById("container")
+        var keyContainer = document.createElement("div")
+        var buttonContainer = document.createElement("div")
+        var keyLayoutSet = {}
+        var buttonLayoutSet = {}
+
+        keyContainer.classList.add("position-absolute");
+        buttonContainer.classList.add("position-absolute");
+
+        function parse(data) {
+            if (typeof data.kind === "string") {
+                if (data.kind == "#resetLayout") {
+                    processKeyReset()
+                    processButtonReset()
+                }
+                if (data.kind == "#container") {
+                    processContainer(data)
+                }
+                if (data.kind == "#colorSet") {
+                    processColorSet(data)
+                }
+                if (data.kind == "#layoutMode") {
+                    processLayoutMode(data)
+                }
+                if (data.kind == "#keyLayout") {
+                    processKeyLayout(data)
+                }
+                if (data.kind == "#keyLayoutList") {
+                    processKeyLayoutList(data)
+                }
+                if (data.kind == "#keyEvent") {
+                    processKeyEvent(data)
+                }
+                if (data.kind == "#keyEventList") {
+                    processKeyEventList(data)
+                }
+                if (data.kind == "#keyCount") {
+                    processKeyCount(data)
+                }
+                if (data.kind == "#keyCountList") {
+                    processKeyCountList(data)
+                }
+                if (data.kind == "#buttonLayout") {
+                    processButtonLayout(data)
+                }
+                if (data.kind == "#buttonEvent") {
+                    processButtonEvent(data)
+                }
+            }
+        }
+
+        function percentString(percent) {
+            if (percent == null) {
+                return "-"
+            }
+            return Number(percent).toFixed(1) + "%"
+        }
+
+        function findStyleRule(name) {
+            for (var i = 0; i < document.styleSheets.length; i++) {
+                var styleSheet = document.styleSheets[i]
+                if (styleSheet.title != "vk-styles") {
+                    continue
+                }
+                for (var j = 0; j < styleSheet.cssRules.length; j++) {
+                    var cssRule = styleSheet.cssRules[j]
+                    if (name.startsWith(".") && cssRule.selectorText == name) {
+                        return cssRule
+                    }
+                    if (name.startsWith("#") && cssRule.selectorText == name) {
+                        return cssRule
+                    }
+                    if (name.startsWith("@") && cssRule.name == name.substr(1)) {
+                        return cssRule
+                    }
+                }
+            }
+            return null
+        }
+
+        function processKeyReset() {
+            Object.keys(keyLayoutSet).forEach(function (key) {
+                keyLayoutSet[key].forEach(function (keyLayout) {
+                    keyContainer.removeChild(keyLayout.root)
+                })
+                delete keyLayoutSet[key]
+            })
+        }
+
+        function processButtonReset() {
+            Object.keys(buttonLayoutSet).forEach(function (key) {
+                buttonContainer.removeChild(buttonLayoutSet[key])
+
+                delete buttonLayoutSet[key]
+            })
+        }
+
+        function processContainer(data) {
+            var container = findStyleRule("#container")
+
+            if (container) {
+                container.style["margin-top"] = data.top + "px"
+                container.style["margin-left"] = data.left + "px"
+                container.style["width"] = data.width + "px"
+                container.style["height"] = data.height + "px"
+            }
+        }
+
+        function processColorSet(data) {
+            var btn = findStyleRule(".btn-vk")
+            var shadow = findStyleRule(".shadow-vk")
+
+            var press = findStyleRule(".press")
+            var fade = findStyleRule("@fade")
+
+            if (btn) {
+                btn.style["color"] = data.text
+                btn.style["border-color"] = data.border
+                btn.style["background-color"] = data.backgroundReleased
+            }
+            if (shadow) {
+                shadow.style["box-shadow"] = data.shadow + " 0 0 3px"
+                shadow.style["text-shadow"] = data.shadow + " 0 0 3px"
+            }
+
+            if (press) {
+                press.style["background-color"] = data.backgroundPressed
+            }
+            if (fade) {
+                fade.cssRules[0].style["background-color"] = data.backgroundPressed
+                fade.cssRules[1].style["background-color"] = data.backgroundReleased
+            }
+        }
+
+        function processLayoutMode(data) {
+            while (container.firstChild) {
+                container.removeChild(container.firstChild)
+            }
+            if (data.mode == "key") {
+                container.appendChild(keyContainer)
+            }
+            if (data.mode == "button") {
+                container.appendChild(buttonContainer)
+            }
+        }
+
+        function processKeyLayout(data) {
+            var root = document.createElement("div")
+            var label = document.createElement("div")
+            var count = document.createElement("div")
+            var percent = document.createElement("div")
+
+            label.innerText = data.label
+            label.classList.add("label-vk")
+
+            percent.classList.add("label-percent")
+
+            root.classList.add("btn")
+            root.classList.add("p-0")
+            root.classList.add("position-absolute")
+            root.classList.add("btn-vk")
+            root.classList.add("shadow-vk")
+            root.style.top = data.top + "px"
+            root.style.left = data.left + "px"
+            root.style.width = data.width + "px"
+            root.style.height = data.height + "px"
+
+            root.appendChild(label)
+            root.appendChild(count)
+            root.appendChild(percent)
+
+            keyContainer.appendChild(root)
+
+            if (keyLayoutSet[data.keyCode] === undefined) {
+                keyLayoutSet[data.keyCode] = []
+            }
+
+            keyLayoutSet[data.keyCode].push({
+                root: root,
+                label: label,
+                count: count,
+                percent: percent,
+            })
+        }
+
+        function processKeyLayoutList(data) {
+            if (Array.isArray(data.keyLayouts)) {
+                data.keyLayouts.forEach(function (keyLayout) {
+                    processKeyLayout(keyLayout)
+                })
+            }
+        }
+
+        function processKeyEvent(data) {
+            var keyLayouts = keyLayoutSet[data.keyCode]
+            if (keyLayouts) {
+                keyLayouts.forEach(function (keyLayout) {
+                    keyLayout.count.innerText = data.count.toLocaleString()
+                    keyLayout.percent.innerText = percentString(data.percent)
+                    if (data.pressed) {
+                        keyLayout.root.classList.remove("blink")
+                        keyLayout.root.classList.add("press")
+                    } else {
+                        keyLayout.root.classList.remove("press")
+                        keyLayout.root.classList.add("blink")
+                    }
+                })
+            }
+        }
+
+        function processKeyEventList(data) {
+            if (Array.isArray(data.keyEvents)) {
+                data.keyEvents.forEach(function (keyEvent) {
+                    processKeyEvent(keyEvent)
+                })
+            }
+        }
+
+        function processKeyCount(data) {
+            var keyLayouts = keyLayoutSet[data.keyCode]
+            if (keyLayouts) {
+                keyLayouts.forEach(function (keyLayout) {
+                    keyLayout.count.innerText = data.count.toLocaleString()
+                    keyLayout.percent.innerText = percentString(data.percent)
+                })
+            }
+        }
+
+        function processKeyCountList(data) {
+            if (Array.isArray(data.keyCounts)) {
+                data.keyCounts.forEach(function (keyCount) {
+                    processKeyCount(keyCount)
+                })
+            }
+        }
+
+        function processButtonLayout(data) {
+            var buttonLayout = buttonLayoutSet[data.buttonName]
+            if (buttonLayout === undefined) {
+                var button = document.createElement("div")
+
+                button.classList.add("btn")
+                button.classList.add("btn-vk")
+                button.classList.add("shadow-vk")
+                button.classList.add("position-absolute")
+                button.classList.add("p-0")
+
+                if (data.shape == "circle") {
+                    button.classList.add("rounded-circle")
+                }
+
+                button.style["top"] = data.top + "px"
+                button.style["left"] = data.left + "px"
+                button.style["width"] = data.width + "px"
+                button.style["height"] = data.height + "px"
+                button.style["lineHeight"] = "1"
+                button.style["display"] = "flex"
+                button.style["alignItems"] = "center"
+                button.style["justifyContent"] = "center"
+                button.style["fontSize"] = ".75rem"
+
+                if (data.label) {
+                    button.innerText = data.label
+                }
+                buttonLayoutSet[data.buttonName] = button
+
+                buttonContainer.appendChild(button)
+            }
+        }
+
+        function processButtonEvent(data) {
+            var button = buttonLayoutSet[data.buttonName]
+            if (button) {
+                if (data.value) {
+                    button.classList.remove("blink")
+                    button.classList.add("press")
+                } else {
+                    button.classList.remove("press")
+                    button.classList.add("blink")
+                }
+            }
+        }
+
+        function send() {
+            if (opened == false) {
+                return
+            }
+
+            socket.send("MESSAGE: " + Math.random())
+        }
+
+        function reconnect() {
+            try {
+                if (socket == null) {
+                    socket = new WebSocket(uri)
+                    socket.onopen = function (e) {
+                        opened = true
+                    }
+                    socket.onclose = function (e) {
+                        opened = false
+                        socket = null
+                    }
+                    socket.onmessage = function (e) {
+                        console.log(e.data)
+
+                        try {
+                            parse(JSON.parse(e.data))
+                        } catch (e) {
+                            console.error(e)
+                        }
+                    }
+                    socket.onerror = function (e) {
+                        opened = false
+                        socket = null
+                    }
+                }
+            } catch (e) {
+                opened = false
+                socket = null
+            }
+
+            setTimeout(reconnect, 1000)
+        }
+
+        setTimeout(reconnect, 1000)
+    </script>
+</body>
+
+</html>
